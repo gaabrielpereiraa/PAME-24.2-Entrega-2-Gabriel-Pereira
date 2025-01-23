@@ -710,7 +710,7 @@ class Sistema{
                     }
                 }
                 if (reservas.length == 0 || is_reserva == false){
-                    console.log("Você não fez nenhum pedido!");
+                    console.log("Você não fez nenhuma reserva!");
                     console.log(sep);
                     this.cliente_logado(cliente);
                     break;
