@@ -32,10 +32,9 @@ class Cliente{
 }
 
 class Quarto{
-    constructor(camas, precopornoite, quantidade, nome, descricao){
+    constructor(camas, precopornoite, nome, descricao){
         this.camas = camas;
         this.precopornoite = precopornoite;
-        this.quantidade = quantidade;
         this.nome = nome;
         this.descricao = descricao;
     }
@@ -198,20 +197,6 @@ class Sistema{
         }
     }
 
-    //Função para checar se a quantidade é válida
-    ask_quantity(){
-        var requisicao = require('readline-sync');
-        let quantity = (requisicao.question("Digite a quantidade de quartos disponíveis: "));
-        if (isNaN(quantity) || !Number.isInteger(Number(quantity))){
-            console.log("Quantidade inválida!");
-            console.log(sep);
-            return this.ask_quantity();
-        }
-        else{
-            return Number(quantity);
-        }
-    }   
-
     //Função para checar se a quantidade de camas é válida
     ask_beds(){
         var requisicao = require('readline-sync');
@@ -255,6 +240,38 @@ class Sistema{
             return this.ask_check(info);
         }
         return date;
+    }
+
+    //Funcão para comparar duas datas e retorna 0 se as funcoes sao iguais, 1 se a primeira é maior e 2 se a segunda é maior
+    compare_dates(a, b){
+        let a_sep = a.split('-')
+        let b_sep = b.split('-')
+
+        if (a_sep[0] > b_sep[0]) return 1
+        else if (b_sep[0] > a_sep[0]) return 2
+
+        if (a_sep[1] > b_sep[1]) return 1
+        else if (b_sep[1] > a_sep[1]) return 2
+
+        if (a_sep[2] > b_sep[2]) return 1
+        else if (b_sep[2] > a_sep[2]) return 2
+
+        return 0
+    }
+
+    //Funcão para comparar dois intervalos de datas e retorna true se os intervalos sao independentes entre si ou false se nao sao
+    compare_intervals(a1, a2, b1, b2){
+        let cmp_starts = this.compare_dates(a1, b1)
+
+        if (cmp_starts == 0) return false
+        else if (cmp_starts == 1){
+            if (this.compare_dates(a1, b2) == 2) return false
+            return true
+        }
+        else{
+            if (this.compare_dates(b1, a2) == 2) return false
+            return true
+        }
     }
 
     login(){
@@ -405,7 +422,7 @@ class Sistema{
                 quartos.sort((a, b) => a.nome.localeCompare(b.nome));
                 for (let i = 0; i < quartos.length; i++){
                     let q = quartos[i];
-                    console.log(`Nome: ${q.nome} | Descricao: ${q.descricao} | Preco por noite: ${q.precopornoite} | Quantidade disponível: ${q.quantidade} | Quantidade de camas: ${q.camas}`);
+                    console.log(`Nome: ${q.nome} | Descricao: ${q.descricao} | Preco por noite: ${q.precopornoite} | Quantidade de camas: ${q.camas}`);
                 }
                 console.log(sep);
                 this.funcionario_logado(funcionario);
@@ -484,9 +501,8 @@ class Sistema{
                 let nome = requisicao.question("Digite o nome do quarto: ");
                 let descricao = requisicao.question("Digite a descricao do quarto: ");
                 let preco = this.ask_price();
-                let quantidade = this.ask_quantity();
                 let camas = this.ask_beds();
-                let novo_quarto = new Quarto(camas, preco, quantidade, nome, descricao);
+                let novo_quarto = new Quarto(camas, preco, nome, descricao);
                 quartos.push(novo_quarto);
                 quartos.sort((a, b) => a.nome.localeCompare(b.nome));
                 this.funcionario_logado(funcionario);
@@ -503,7 +519,7 @@ class Sistema{
                 }
                 for (let i = 0; i < quartos.length; i++){
                     let q = quartos[i];
-                    console.log(`${i+1} -> Nome: ${q.nome} | Descricao: ${q.descricao} | Preco por noite: ${q.precopornoite} | Quantidade disponível: ${q.quantidade} | Quantidade de camas: ${q.camas}`);
+                    console.log(`${i+1} -> Nome: ${q.nome} | Descricao: ${q.descricao} | Preco por noite: ${q.precopornoite} | Quantidade de camas: ${q.camas}`);
                 }
                 let q_to_change = Number(requisicao.question("Digite o quarto que deseja editar: "))-1
                 if (!quartos.includes(quartos[q_to_change]) || q_to_change >= quartos.length){
@@ -516,8 +532,7 @@ class Sistema{
                 console.log("1.Nome");
                 console.log("2.Descricao");
                 console.log("3.Preco por noite");
-                console.log("4.Quantidade");
-                console.log("5.Camas");
+                console.log("4.Camas");
                 let a_to_change = requisicao.question("Digite a característica que deseja editar: ");
                 switch (a_to_change){
                     case "1":
@@ -530,9 +545,6 @@ class Sistema{
                         quartos[q_to_change].precopornoite = this.ask_price();
                         break;
                     case "4":
-                        quartos[q_to_change].quantidade = this.ask_quantity();
-                        break;
-                    case "5":
                         quartos[q_to_change].camas = this.ask_beds();
                         break;
                     default:
@@ -556,7 +568,7 @@ class Sistema{
                 }
                 for (let i = 0; i < quartos.length; i++){
                     let q = quartos[i];
-                    console.log(`${i+1} -> Nome: ${q.nome} | Descricao: ${q.descricao} | Preco por noite: ${q.precopornoite} | Quantidade disponível: ${q.quantidade} | Quantidade de camas: ${q.camas}`);
+                    console.log(`${i+1} -> Nome: ${q.nome} | Descricao: ${q.descricao} | Preco por noite: ${q.precopornoite} | Quantidade de camas: ${q.camas}`);
                 }
                 let q_to_remove = Number(requisicao.question("Digite o quarto que deseja excluir: "))-1;
                 if (!quartos.includes(quartos[q_to_remove]) || q_to_remove >= quartos.length){
@@ -654,13 +666,13 @@ class Sistema{
                 if (quartos.length == 0){
                     console.log("Não existem quartos!");
                     console.log(sep);
-                    this.funcionario_logado(funcionario);
+                    this.cliente_logado(cliente);
                     break;
                 }
                 quartos.sort((a, b) => a.nome.localeCompare(b.nome));
                 for (let i = 0; i < quartos.length; i++){
                     let q = quartos[i];
-                    console.log(`Nome: ${q.nome} | Descricao: ${q.descricao} | Preco por noite: ${q.precopornoite} | Quantidade disponível: ${q.quantidade} | Quantidade de camas: ${q.camas}`);
+                    console.log(`Nome: ${q.nome} | Descricao: ${q.descricao} | Preco por noite: ${q.precopornoite} | Quantidade de camas: ${q.camas}`);
                 }
                 console.log(sep);
                 this.cliente_logado(cliente);
@@ -676,7 +688,7 @@ class Sistema{
                 }
                 for (let i = 0; i < quartos.length; i++){
                     let q = quartos[i];
-                    console.log(`${i+1} -> Nome: ${q.nome} | Descricao: ${q.descricao} | Preco por noite: ${q.precopornoite} | Quantidade disponível: ${q.quantidade} | Quantidade de camas: ${q.camas}`);
+                    console.log(`${i+1} -> Nome: ${q.nome} | Descricao: ${q.descricao} | Preco por noite: ${q.precopornoite} | Quantidade de camas: ${q.camas}`);
                 }
                 let r_qrt = Number(requisicao.question("Digite o quarto da reserva: "))-1;
                 console.log(sep);
@@ -688,9 +700,21 @@ class Sistema{
                 }
                 let cin = this.ask_check("checkin")
                 let cout = this.ask_check("checkout")
+                let check = false;
+                for (let i = 0; i < reservas.length; i++){
+                    if (reservas[i].quarto == quartos[r_qrt].nome){
+                        if (!this.compare_intervals(reservas[i].checkin, reservas[i].checkout, cin, cout)){
+                            console.log(`Esse quarto já está reservado dos dias ${reservas[i].checkin} - ${reservas[i].checkout}`);
+                            console.log(sep);
+                            check = true;
+                            this.cliente_logado(cliente);
+                            break;
+                        }
+                    }
+                }
+                if (check) break
                 let new_r = new Reserva(Math.floor(Math.random() * 10000000), cliente.id, "Pendente", cin, cout, quartos[r_qrt].nome, false);
                 reservas.push(new_r);
-                quartos[r_qrt].quantidade--;
                 console.log("Reserva realizada com sucesso!");
                 console.log(sep);
                 this.cliente_logado(cliente);
